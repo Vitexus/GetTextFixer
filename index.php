@@ -5,7 +5,7 @@ include './File/Gettext/PO.php';
 
 $sourcesDir = '/home/vitex/Projects/VitexSoftware/iciedit/src/';
 $localesDir = '/home/vitex/Projects/VitexSoftware/iciedit/src/locale';
-
+$destDir = '/home/vitex/Projects/VitexSoftware/iciedit2/';
 
 
 $gt = new File_Gettext_PO();
@@ -21,7 +21,7 @@ function read_stdin()
     return $input;                  // return the text entered
 }
 
-function exchLocStrings($filepath, $gt)
+function exchLocStrings($filepath, $gt, $destDir)
 {
     $locs = array();
 
@@ -64,28 +64,31 @@ function exchLocStrings($filepath, $gt)
         echo "Zbyva přeložit " . $stringCount-- . "\n";
     }
 
-    $newdest = dirname($filepath) . '2';
-    mkdir($newdest, '0777', true);
-    file_put_contents($newdest . basename($newdest), $in);
+    if (!file_exists(dirname($destDir . $filepath))) {
+        mkdir(dirname($destDir . $filepath), 0777, true);
+    }
+    file_put_contents($destDir . $filepath, $in);
 }
 
 $sources = scandir($sourcesDir, 1);
 $sources2 = scandir($sourcesDir . '/classes/', 1);
 foreach ($sources2 as $classdir) {
-    $sources[] = 'classes/' . $classdir;
+    $sources[] = '/classes/' . $classdir;
 }
 
 foreach ($sources as $id => $filename) {
     if (preg_match('/^.*\.(php)$/i', $filename)) {
         echo $id . ' z ' . count($sources) . ' souborů ' . "\n";
-        exchLocStrings($sourcesDir . '/' . $filename, $gt);
+        exchLocStrings($sourcesDir . '/' . $filename, $gt, $destDir);
     }
 }
 
 //exchLocStrings('/home/vitex/Projects/VitexSoftware/iciedit/src/index.php');
 $gt->strings = array_flip($gt->strings);
-mkdir($localesDir . '2/cs_CZ/LC_MESSAGES/', '0777', true);
-$gt->save($localesDir . '2/cs_CZ/LC_MESSAGES/messages.po2');
+if (!file_exists($destDir . 'locales/cs_CZ/LC_MESSAGES/')) {
+    mkdir($destDir . 'locales/cs_CZ/LC_MESSAGES/', 0777, true);
+}
+$gt->save($destDir . 'locales/cs_CZ/LC_MESSAGES/messages.po2');
 
 $gt2 = new File_Gettext_PO();
 $gt2->load($localesDir . '/en_US/LC_MESSAGES/messages.po');
@@ -95,7 +98,10 @@ $gt2->strings = array();
 foreach ($gt->strings as $strId => $string) {
     $gt2->strings[$strId] = $strId;
 }
-mkdir($localesDir . '2/en_US/LC_MESSAGES/', '0777', true);
-$gt->save($localesDir . '2/en_US/LC_MESSAGES/messages.po');
+
+if (!file_exists($destDir . 'locales/en_US/LC_MESSAGES/')) {
+    mkdir($destDir . 'locales/en_US/LC_MESSAGES/', 0777, true);
+}
+$gt->save($destDir . 'locales/en_US/LC_MESSAGES/messages.po');
 
 
